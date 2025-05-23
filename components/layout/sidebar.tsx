@@ -24,12 +24,12 @@ export default function Sidebar() {
     },
     {
       name: "Trucks",
-      path: "/trucks",
+      path: "/dashboard/trucks",
       icon: <Truck className="h-5 w-5" />,
     },
     {
       name: "Drivers",
-      path: "/drivers",
+      path: "/dashboard/drivers",
       icon: <Users className="h-5 w-5" />,
     },
     {

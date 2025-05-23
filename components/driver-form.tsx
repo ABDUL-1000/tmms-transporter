@@ -1,90 +1,125 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Truck, Driver } from "@/lib/types"
 
-interface DriverFormProps {
-  driver: Driver | null
-  trucks: Truck[]
-  onSubmit: (driver: Driver) => void
-}
+import { toast } from "sonner"
+import api from "@/lib/API/axios"
 
-export default function DriverForm({ driver, trucks, onSubmit }: DriverFormProps) {
-  const [id, setId] = useState(driver?.id || `D-${Math.floor(Math.random() * 900) + 100}`)
-  const [name, setName] = useState(driver?.name || "")
-  const [status, setStatus] = useState(driver?.status || "off_duty")
-  const [assignedTruckId, setAssignedTruckId] = useState(driver?.assignedTruckId || "")
+export default function DriverForm({ onSuccess }: { onSuccess: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    other_name: "",
+    license_number: "",
+    license_details: "",
+    phone_number: "",
+    address: "",
+    city: "",
+    state: "",
+    country: "",
+    password: "",
+    password_confirmation: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  
 
-    const updatedDriver: Driver = {
-      id,
-      name,
-      status: status as "on_duty" | "off_duty" | "on_leave",
-      assignedTruckId: assignedTruckId || null,
-    }
-
-    onSubmit(updatedDriver)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
-  // Filter out trucks that are already assigned to other drivers
-  const availableTrucks = trucks.filter((truck) => truck.id === assignedTruckId || !truck.driverId)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const { data } = await api.post("/transporters/drivers", formData)
+      console.log("Success:", data)
+      toast.success("Driver added successfully")
+      onSuccess()   // <-- call this after toast
+    } catch (error: any) {
+      console.error("Error creating driver:", error)
+      toast.error("Failed to add driver")
+    }
+  }
+
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-      <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-4 pt-4 ">
+      <div className="grid grid-cols-4 gap-2 overflow-y-scroll">
         <div className="space-y-2">
-          <Label htmlFor="id">Driver ID</Label>
-          <Input id="id" value={id} onChange={(e) => setId(e.target.value)} required />
+          <Label htmlFor="first_name">First Name</Label>
+          <Input id="first_name" value={formData.first_name} onChange={handleChange} />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="name">Driver Name</Label>
-          <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger id="status">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="on_duty">On Duty</SelectItem>
-              <SelectItem value="off_duty">Off Duty</SelectItem>
-              <SelectItem value="on_leave">On Leave</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="last_name">Last Name</Label>
+          <Input id="last_name" value={formData.last_name} onChange={handleChange} />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="truck">Assigned Truck</Label>
-          <Select value={assignedTruckId} onValueChange={setAssignedTruckId}>
-            <SelectTrigger id="truck">
-              <SelectValue placeholder="Select truck" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="unassigned">Unassigned</SelectItem>
-              {availableTrucks.map((truck) => (
-                <SelectItem key={truck.id} value={truck.id}>
-                  {truck.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="submit">{driver ? "Update Driver" : "Add Driver"}</Button>
+        <div className="space-y-2">
+          <Label htmlFor="other_name">Other Name</Label>
+          <Input id="other_name" value={formData.other_name} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="license_number">License Number</Label>
+          <Input id="license_number" value={formData.license_number} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="license_details">License Details</Label>
+          <Input id="license_details" value={formData.license_details} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone_number">Phone Number</Label>
+          <Input id="phone_number" value={formData.phone_number} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="address">Address</Label>
+          <Input id="address" value={formData.address} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="city">City</Label>
+          <Input id="city" value={formData.city} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="state">State</Label>
+          <Input id="state" value={formData.state} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="country">Country</Label>
+          <Input id="country" value={formData.country} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input type="password" id="password" value={formData.password} onChange={handleChange} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password_confirmation">Confirm Password</Label>
+          <Input
+            type="password"
+            id="password_confirmation"
+            value={formData.password_confirmation}
+            onChange={handleChange}
+          />
+        </div>
       </div>
+ 
+      <div className="flex justify-end gap-2  pt-1">
+        <Button type="submit">Submit</Button>
+         <Button type="button" onClick={() => setOpen(true)}>close</Button>
+      </div>
+    
     </form>
   )
 }

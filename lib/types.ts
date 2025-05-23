@@ -13,16 +13,37 @@ export interface Route {
 export interface Truck {
   id: string
   name: string
-  status: "idle" | "moving" | "pending" | "maintenance"
+ movement_status: "pending" | "moving" | "delivered" 
   driverId: string | null
   location: Location
-  route?: Route
+
+   
+  quantity: number
+  compartment: number
+  status: "pending" | "moving" | "delivered" 
+
+
+
+  calibrate_one?: number // Add this line
+  calibrate_two?: number // Add this line
+  calibrate_three?: number // Add this line
 }
 
 export interface Driver {
   id: string
-  name: string
-  status: "on_duty" | "off_duty" | "on_leave"
+ first_name: string;
+  last_name: string;
+  other_name: string;
+  license_number: string;
+  license_details: string;
+  phone_number: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  password: string;
+  password_confirmation: string;
+  status: "pending" | "moving" | "delivered"
   assignedTruckId: string | null
 }
 

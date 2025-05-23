@@ -23,10 +23,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
-            <Header />
-            <div className="flex flex-1">
-              <Sidebar />
-              <div className="flex-1 pl-0 lg:pl-64">{children}</div>
+          
+            <div className="">
+            
+              <div className="P-4">{children}</div>
             </div>
           </div>
         </ThemeProvider>

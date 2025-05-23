@@ -1,95 +1,9 @@
+import { cookies } from "next/headers";
 import type { Truck, Driver, Trip, Customer, Goods } from "./types"
 
-export function getTrucks(): Truck[] {
-  return [
-    {
-      id: "T-101",
-      name: "Truck 101",
-      status: "moving",
-      driverId: "D-001",
-      location: { latitude: 30, longitude: 30 },
-      route: {
-        origin: { latitude: 20, longitude: 10 },
-        destination: { latitude: 80, longitude: 90 },
-        originName: "Warehouse A",
-        destinationName: "Distribution Center",
-      },
-    },
-    {
-      id: "T-102",
-      name: "Truck 102",
-      status: "maintenance",
-      driverId: null,
-      location: { latitude: 50, longitude: 50 },
-    },
-    {
-      id: "T-103",
-      name: "Truck 103",
-      status: "moving",
-      driverId: "D-002",
-      location: { latitude: 70, longitude: 30 },
-      route: {
-        origin: { latitude: 50, longitude: 50 },
-        destination: { latitude: 80, longitude: 10 },
-        originName: "City Hub",
-        destinationName: "Retail Center",
-      },
-    },
-    {
-      id: "T-104",
-      name: "Truck 104",
-      status: "idle",
-      driverId: null,
-      location: { latitude: 20, longitude: 80 },
-    },
-    {
-      id: "T-105",
-      name: "Truck 105",
-      status: "pending",
-      driverId: "D-003",
-      location: { latitude: 40, longitude: 70 },
-      route: {
-        origin: { latitude: 40, longitude: 70 },
-        destination: { latitude: 10, longitude: 20 },
-        originName: "Distribution Center",
-        destinationName: "Warehouse B",
-      },
-    },
-    {
-      id: "T-106",
-      name: "Truck 106",
-      status: "moving",
-      driverId: "D-004",
-      location: { latitude: 60, longitude: 40 },
-      route: {
-        origin: { latitude: 80, longitude: 80 },
-        destination: { latitude: 20, longitude: 20 },
-        originName: "Retail Center",
-        destinationName: "Warehouse A",
-      },
-    },
-    {
-      id: "T-107",
-      name: "Truck 107",
-      status: "idle",
-      driverId: null,
-      location: { latitude: 30, longitude: 60 },
-    },
-    {
-      id: "T-108",
-      name: "Truck 108",
-      status: "moving",
-      driverId: "D-005",
-      location: { latitude: 25, longitude: 45 },
-      route: {
-        origin: { latitude: 10, longitude: 20 },
-        destination: { latitude: 90, longitude: 90 },
-        originName: "Warehouse B",
-        destinationName: "Distribution Center",
-      },
-    },
-  ]
-}
+
+
+
 
 export function getDrivers(): Driver[] {
   return [
@@ -368,10 +282,10 @@ export function getGoodsById(goodsId: string): Goods | undefined {
   return goods.find((item) => item.id === goodsId)
 }
 
-export function getTruckById(truckId: string): Truck | undefined {
-  const trucks = getTrucks()
-  return trucks.find((truck) => truck.id === truckId)
-}
+// export function getTruckById(truckId: string): Truck | undefined {
+//   const trucks = getTrucks()
+//   return trucks.find((truck) => truck.id === truckId)
+// }
 
 export function getDriverById(driverId: string): Driver | undefined {
   const drivers = getDrivers()
