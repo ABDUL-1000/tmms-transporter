@@ -20,7 +20,7 @@ function getCookie(name: string) {
 
 api.interceptors.request.use(
   (config) => {
-    const token = getCookie("token"); // 👈 name of your cookie key
+    const token = getCookie("token"); 
     console.log("Token:", token);
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;

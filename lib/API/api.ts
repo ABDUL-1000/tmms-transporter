@@ -1,3 +1,4 @@
+import { DriverLocationResponse, SingleDriverLocationResponse } from "../types";
 import api from "./axios";
 
 
@@ -21,6 +22,7 @@ const fetchTrucks = async () => {
 };
 
 fetchTrucks();
+
 
 
 
@@ -48,3 +50,24 @@ const createTruck = async () => {
 };
 
 createTruck();
+export const fetchDriverLocations = async (): Promise<DriverLocationResponse> => {
+  try {
+    const { data } = await api.get("/transporters/driver-locations")
+    console.log("Driver locations:", data)
+    return data
+  } catch (error) {
+    console.error("Error fetching driver locations:", error)
+    throw error
+  }
+}
+
+export const fetchSingleDriverLocation = async (locationId: number): Promise<SingleDriverLocationResponse> => {
+  try {
+    const { data } = await api.get(`/transporters/driver-locations/${locationId}`)
+    console.log("Single driver location:", data)
+    return data
+  } catch (error) {
+    console.error("Error fetching single driver location:", error)
+    throw error
+  }
+}

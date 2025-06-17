@@ -14,6 +14,7 @@ interface SignupData {
   license_details: string;
   description: string;
   password_confirmation: string;
+
 }
 
 export const signup = async (signupData: SignupData) => {
@@ -28,9 +29,7 @@ export const signup = async (signupData: SignupData) => {
         }
       }
     );
-    // const { token } = response.data;
-    // localStorage.setItem("token", token);
-    // return response.data;
+ 
   } catch (error: any) {
     throw error.response?.data || error.message;
   }

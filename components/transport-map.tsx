@@ -14,19 +14,13 @@ export default function TransportMap({ trucks }: TransportMapProps) {
   const [loading, setLoading] = useState(true)
   const [selectedTruck, setSelectedTruck] = useState<TruckType | null>(null)
 
-  // This is a placeholder for the actual map implementation
-  // In a real app, you would use a library like Mapbox, Google Maps, or Leaflet
-  useEffect(() => {
-    // Simulate map loading
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1500)
 
-    return () => clearTimeout(timer)
+  useEffect(() => {
+ 
+  
+
   }, [])
 
-  // In a real implementation, you would initialize the map here
-  // and add markers for each truck
 
   return (
     <div className="relative h-full w-full bg-gray-100">
@@ -91,7 +85,7 @@ export default function TransportMap({ trucks }: TransportMapProps) {
                     </div>
 
                     {/* Draw route line if truck is moving */}
-                    {truck.status === "moving" && truck.route && (
+                    {truck.status === "moving" && truck && (
                       <svg
                         className="absolute left-0 top-0 h-full w-full"
                         style={{
@@ -105,8 +99,8 @@ export default function TransportMap({ trucks }: TransportMapProps) {
                         }}
                       >
                         <line
-                          x1={`${truck.route.origin.longitude}%`}
-                          y1={`${truck.route.origin.latitude}%`}
+                          x1={`${truck.location.latitude}%`}
+                          y1={`${truck.location.latitude}%`}
                           x2={`${truck.location.longitude}%`}
                           y2={`${truck.location.latitude}%`}
                           stroke="#4CAF50"
@@ -116,8 +110,8 @@ export default function TransportMap({ trucks }: TransportMapProps) {
                         <line
                           x1={`${truck.location.longitude}%`}
                           y1={`${truck.location.latitude}%`}
-                          x2={`${truck.route.destination.longitude}%`}
-                          y2={`${truck.route.destination.latitude}%`}
+                          x2={`${truck.location.longitude}%`}
+                          y2={`${truck.destination.latitude}%`}
                           stroke="#2196F3"
                           strokeWidth="2"
                           strokeDasharray="5,5"

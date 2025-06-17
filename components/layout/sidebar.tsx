@@ -18,8 +18,8 @@ export default function Sidebar() {
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
-      name: "Movement",
-      path: "/movement",
+      name: "Drivers Locations",
+      path: "/dashboard/drivers/locations",
       icon: <MapPin className="h-5 w-5" />,
     },
     {
