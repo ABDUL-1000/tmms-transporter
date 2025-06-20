@@ -90,6 +90,7 @@ export interface Trip {
   distance: number
 }
 export interface DriverLocation {
+
   id: number
   program_id: number | null
   driver_id: number

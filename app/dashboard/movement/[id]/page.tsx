@@ -1,78 +1,114 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import Loader from "@/components/Loader";
-import { useRouter } from "next/navigation";
-import { SingleDriverLocationResponse } from "@/lib/types";
-import { fetchSingleDriverLocation } from "@/lib/API/api";
+import { use, useEffect, useState } from "react"
+import dynamic from "next/dynamic"
+import Loader from "@/components/Loader"
+import type { SingleDriverLocationResponse } from "@/lib/types"
+import { fetchSingleDriverLocation } from "@/lib/API/api"
+import "leaflet/dist/leaflet.css"
 
-// Fix for default marker icons in Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "/images/marker-icon-2x.png",
-  iconUrl: "/images/marker-icon.png",
-  shadowUrl: "/images/marker-shadow.png",
-});
+// Dynamically import the map component to prevent SSR
+const SingleDriverMapComponent = dynamic(() => Promise.resolve(SingleDriverMapContent), {
+  ssr: false,
+  loading: () => <Loader />,
+})
 
-const SingleDriverLocationPage = ({ params }: { params: { id: string } }) => {
-  const [location, setLocation] = useState<SingleDriverLocationResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([9.05785, 7.49508]);
-  const [zoom, setZoom] = useState(6);
+interface SingleDriverMapContentProps {
+  params: Promise<{ id: string }>
+}
 
-  const router = useRouter();
-  const locationId = parseInt(params.id);
+function SingleDriverMapContent({ params }: SingleDriverMapContentProps) {
+  const { id } = use(params)
+
+  const [location, setLocation] = useState<SingleDriverLocationResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [mapCenter, setMapCenter] = useState<[number, number]>([9.05785, 7.49508])
+  const [zoom, setZoom] = useState(6)
+  const [mapComponents, setMapComponents] = useState<any>(null)
+  const [L, setL] = useState<any>(null)
+
+  // This is the driver ID from the URL
+  const driverId = Number.parseInt(id)
+
+  // Dynamically import Leaflet and react-leaflet
+  useEffect(() => {
+    const loadMapComponents = async () => {
+      try {
+        const [leaflet, reactLeaflet] = await Promise.all([import("leaflet"), import("react-leaflet")])
+
+        // Fix for default marker icons
+        delete (leaflet.default.Icon.Default.prototype as any)._getIconUrl
+        leaflet.default.Icon.Default.mergeOptions({
+          iconRetinaUrl: "/images/marker-icon-2x.png",
+          iconUrl: "/images/marker-icon.png",
+          shadowUrl: "/images/marker-shadow.png",
+        })
+
+        setL(leaflet.default)
+        setMapComponents(reactLeaflet)
+      } catch (error) {
+        console.error("Failed to load map components:", error)
+        setError("Failed to load map components")
+      }
+    }
+
+    loadMapComponents()
+  }, [])
 
   useEffect(() => {
+    if (!L || !mapComponents) return
+
     const fetchLocation = async () => {
       try {
-        const data = await fetchSingleDriverLocation(locationId);
-        setLocation(data);
-        console.log(data);
-        
-        // Only set map center if coordinates are valid numbers
-        if (data.data.latitude && data.data.longitude && 
-            data.data.latitude !== "string" && data.data.longitude !== "string") {
-          setMapCenter([
-            parseFloat(data.data.latitude),
-            parseFloat(data.data.longitude)
-          ]);
-          setZoom(12); // Zoom in closer for single location
+        // Using driver ID with your correct API endpoint
+        const data = await fetchSingleDriverLocation(driverId)
+        setLocation(data)
+        console.log("API Response:", data) // Debug log
+
+        if (
+          data?.data?.latitude &&
+          data?.data?.longitude &&
+          data.data.latitude !== "string" &&
+          data.data.longitude !== "string"
+        ) {
+          setMapCenter([Number.parseFloat(data.data.latitude), Number.parseFloat(data.data.longitude)])
+          setZoom(12)
         }
       } catch (err) {
-        console.error("Failed to fetch driver location", err);
-        setError("Failed to load driver location");
+        console.error("Failed to fetch driver location", err)
+        setError("Failed to load driver location")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchLocation();
-  }, [locationId]);
+    fetchLocation()
+  }, [driverId, L, mapComponents])
 
-  if (typeof window === "undefined") {
-    return <Loader />;
-  }
+  if (!L || !mapComponents || loading) return <Loader />
+  if (error) return <p className="text-red-500">{error}</p>
+  if (!location || !location.data) return <p className="text-gray-600">Location not found.</p>
 
-  if (loading) return <Loader />;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (!location) return <p className="text-gray-600">Location not found.</p>;
+  // Safe access to nested properties
+  const locationData = location.data
+  const driver = locationData.driver
+  const user = driver?.user
 
-  const hasValidCoordinates = location.data.latitude && location.data.longitude && 
-                            location.data.latitude !== "string" && 
-                            location.data.longitude !== "string";
+  const hasValidCoordinates =
+    locationData.latitude &&
+    locationData.longitude &&
+    locationData.latitude !== "string" &&
+    locationData.longitude !== "string"
+
+  const { MapContainer, TileLayer, Marker, Popup } = mapComponents
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-6">Driver Location Details</h1>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Map Section - Only show if coordinates are valid */}
-        {hasValidCoordinates && (
+        {hasValidCoordinates ? (
           <div className="lg:col-span-2 h-[500px]">
             <MapContainer
               center={mapCenter}
@@ -83,48 +119,86 @@ const SingleDriverLocationPage = ({ params }: { params: { id: string } }) => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
-              <Marker 
-                position={mapCenter}
-              >
+              <Marker position={mapCenter}>
                 <Popup>
                   <div className="p-2">
-                    <p><strong>Driver:</strong> {location.data.driver.first_name} {location.data.driver.last_name}</p>
-                    <p><strong>Phone:</strong> {location.data.driver.user.phone_number}</p>
-                    <p><strong>Location:</strong> {parseFloat(location.data.latitude).toFixed(4)}, {parseFloat(location.data.longitude).toFixed(4)}</p>
+                    <p>
+                      <strong>Driver:</strong> {driver?.first_name || "N/A"} {driver?.last_name || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Phone:</strong> {user?.phone_number || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Location:</strong> {Number.parseFloat(locationData.latitude).toFixed(4)},{" "}
+                      {Number.parseFloat(locationData.longitude).toFixed(4)}
+                    </p>
                   </div>
                 </Popup>
               </Marker>
             </MapContainer>
           </div>
+        ) : (
+          <div className="lg:col-span-2 h-[500px] flex items-center justify-center bg-gray-100 rounded-lg">
+            <p className="text-gray-600">No valid coordinates available for this driver</p>
+          </div>
         )}
 
-        {/* Driver Details */}
         <div className="bg-gray-100 p-6 rounded-lg shadow-md">
           <h3 className="text-xl font-semibold text-gray-700 mb-4">Driver Information</h3>
           <div className="space-y-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <p className="text-gray-800"><strong>Name:</strong> {location.data.driver.first_name} {location.data.driver.other_name} {location.data.driver.last_name}</p>
-              <p className="text-gray-800"><strong>License Number:</strong> {location.data.driver.license_number}</p>
-              <p className="text-gray-800"><strong>Status:</strong> {location.data.driver.status}</p>
-              <p className="text-gray-800"><strong>Phone:</strong> {location.data.driver.user.phone_number}</p>
-              <p className="text-gray-800"><strong>Email:</strong> {location.data.driver.user.email}</p>
-              <p className="text-gray-800"><strong>Address:</strong> {location.data.driver.user.address}, {location.data.driver.user.city}, {location.data.driver.user.state}, {location.data.driver.user.country}</p>
-              
+              {/* Safe access with fallbacks */}
+              <p className="text-gray-800">
+                <strong>Name:</strong> {driver?.first_name || "N/A"} {driver?.other_name || ""}{" "}
+                {driver?.last_name || "N/A"}
+              </p>
+
+              <p className="text-gray-800">
+                <strong>License Number:</strong> {driver?.license_number || "N/A"}
+              </p>
+
+              <p className="text-gray-800">
+                <strong>Status:</strong> {driver?.status || "N/A"}
+              </p>
+
+              <p className="text-gray-800">
+                <strong>Phone:</strong> {user?.phone_number || "N/A"}
+              </p>
+
+              <p className="text-gray-800">
+                <strong>Email:</strong> {user?.email || "N/A"}
+              </p>
+
+              <p className="text-gray-800">
+                <strong>Address:</strong> {user?.address || "N/A"}, {user?.city || "N/A"}, {user?.state || "N/A"},{" "}
+                {user?.country || "N/A"}
+              </p>
+
               {hasValidCoordinates ? (
                 <p className="text-gray-800">
-                  <strong>Location:</strong> {parseFloat(location.data.latitude).toFixed(4)}, {parseFloat(location.data.longitude).toFixed(4)}
+                  <strong>Location:</strong> {Number.parseFloat(locationData.latitude).toFixed(4)},{" "}
+                  {Number.parseFloat(locationData.longitude).toFixed(4)}
                 </p>
               ) : (
                 <p className="text-yellow-600">No valid coordinates available</p>
               )}
-              
-              <p className="text-gray-800"><strong>Last Updated:</strong> {new Date(location.data.updated_at).toLocaleString()}</p>
+
+              <p className="text-gray-800">
+                <strong>Last Updated:</strong>{" "}
+                {locationData.updated_at ? new Date(locationData.updated_at).toLocaleString() : "N/A"}
+              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SingleDriverLocationPage;
+interface PageProps {
+  params: Promise<{ id: string }>
+}
+
+export default function SingleDriverLocationPage({ params }: PageProps) {
+  return <SingleDriverMapComponent params={params} />
+}
