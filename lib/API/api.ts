@@ -61,13 +61,14 @@ export const fetchDriverLocations = async (): Promise<DriverLocationResponse> =>
   }
 }
 
+// api.ts
 export const fetchSingleDriverLocation = async (locationId: number): Promise<SingleDriverLocationResponse> => {
   try {
-    const { data } = await api.get(`/transporters/driver-locations/${locationId}`)
-    console.log("Single driver location:", data)
-    return data
+    const { data } = await api.get(`/transporters/driver-locations/${locationId}`);
+    console.log("Single driver location:", data);
+    return data;
   } catch (error) {
-    console.error("Error fetching single driver location:", error)
-    throw error
+    console.error("Error fetching single driver location:", error);
+    throw error;
   }
-}
+};

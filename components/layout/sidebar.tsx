@@ -19,7 +19,7 @@ export default function Sidebar() {
     },
     {
       name: "Drivers Locations",
-      path: "/dashboard/drivers/locations",
+      path: "/dashboard/movement",
       icon: <MapPin className="h-5 w-5" />,
     },
     {
